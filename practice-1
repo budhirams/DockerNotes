@@ -1,0 +1,141 @@
+Dockerfile: simple text file that contains set of instructions to build a Docker image.
+Build Docker Image
+   - docker build -t mynginx-custom:v1 .
+
+Run docker container 
+  - docker run --name mynginx1 -p 8080:80 -d mynginx-custom:v1
+
+Tag Docker image
+
+  - docker tag mynginx-custom:v1 dockerid/mynginx-custom:v1
+
+Push Docker Image to Docker Hub
+  - docker push dockerid/mynginx-custom:v1
+
+Search Docker Image in Docker Hub
+  - docker search nginx
+  - docker search --filter=stars=50 nginx
+  - docker search --filter=is-official=true nginx 
+
+
+How to logged in docker hub using terminal and very using code
+bis@kali:~/shellScripting$ docker login
+
+USING WEB-BASED LOGIN
+
+i Info → To sign in with credentials on the command line, use 'docker login -u <username>'
+         
+
+Your one-time device confirmation code is: TKQQ-FBSH
+Press ENTER to open your browser or submit your device code here: https://login.docker.com/activate
+
+Waiting for authentication in the browser…
+
+WARNING! Your credentials are stored unencrypted in '/home/bis/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+
+How to create a container
+bis@kali:~/shellScripting$ docker run --name myapp1 -p 8090:80 -d nginx
+-d means detach mode 
+
+
+ docker rmi -f `docker images -aq`
+
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker image ls
+REPOSITORY                     TAG       IMAGE ID       CREATED          SIZE
+demo5-dockerfile-add-vs-copy   v1        d88977f1af13   5 seconds ago    20.2MB
+budhi421/mynginx-custom        v1        2e56f506e01a   46 minutes ago   279MB
+mynginx-custom                 v1        2e56f506e01a   46 minutes ago   279MB
+
+bis@LAPTOP-MAV6U7B1:~$ docker rmi -f budhi421/mynginx-custom:v1 mynginx-custom:v1            ------ means tag also needed 
+Untagged: budhi421/mynginx-custom:v1
+Untagged: mynginx-custom:v1
+
+
+docker build -t mynginx-custom:v1 .
+docker run  --name myapp1 -p 8090:80 -d mynginx-custom:v1
+
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/03-Build-Docker-Image-Push-to-DockerHub/DockerFiles$ docker tag mynginx-custom:v1 budhi421/mynginx-custom:v1
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/03-Build-Docker-Image-Push-to-DockerHub/DockerFiles$ docker images
+REPOSITORY                TAG       IMAGE ID       CREATED          SIZE
+budhi421/mynginx-custom   v1        2e56f506e01a   13 minutes ago   279MB
+mynginx-custom            v1        2e56f506e01a   13 minutes ago   279MB
+
+
+
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/03-Build-Docker-Image-Push-to-DockerHub/DockerFiles$  docker login
+
+USING WEB-BASED LOGIN
+To sign in with credentials on the command line, use 'docker login -u <username>'
+
+Your one-time device confirmation code is: JSNF-FRVD
+Press ENTER to open your browser or submit your device code here: https://login.docker.com/activate
+
+Waiting for authentication in the browser…
+Login Succeeded
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/03-Build-Docker-Image-Push-to-DockerHub/DockerFiles$ docker push budhi421/mynginx-custom:v1
+The push refers to repository [docker.io/budhi421/mynginx-custom]
+037111f539a0: Mounted from library/nginx
+d3618cedc15e: Mounted from library/nginx
+3da95a905ed5: Mounted from library/nginx
+ec5daaed1d0a: Mounted from library/nginx
+9c82ac2d7de7: Pushed
+312c8058df8a: Pushed
+63b1ad245775: Mounted from library/nginx
+40c013bb3d47: Mounted from library/nginx
+1e537b66692c: Mounted from library/nginx
+v1: digest: sha256:2e56f506e01aa7825fcfdd4669033f13013b67978007b2cc7004d099761fdd57 size: 856
+
+ docker search nginx
+
+
+
+
+docker exec -it my-add-vs-copy-demo /usr/bin/bash   ❌  No such file
+docker exec -it my-add-vs-copy-demo /usr/bin/sh     ❌  No such file
+docker exec -it my-add-vs-copy-demo /bin/sh         ✅  Works!
+
+| Base Image         | Bash?         | Default Shell Path  |
+| ------------------ | ------------- | ------------------- |
+| `alpine`           | ❌ No bash     | `/bin/sh` (BusyBox) |
+| `debian`, `ubuntu` | ✅ bash exists | `/bin/bash`         |
+| `scratch`          | ❌ Nothing     | No shell at all     |
+| `centos`, `fedora` | ✅ bash exists | `/bin/bash`         |
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker ps
+CONTAINER ID   IMAGE                             COMMAND                  CREATED          STATUS          PORTS                  NAMES
+bfc63871ccb5   demo5-dockerfile-add-vs-copy:v1   "/docker-entrypoint.…"   11 minutes ago   Up 11 minutes   0.0.0.0:8080->80/tcp   my-add-vs-copy-demo
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker rm -f my-add-vs-copy-demo
+my-add-vs-copy-demo
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker images
+REPOSITORY                     TAG       IMAGE ID       CREATED             SIZE
+demo5-dockerfile-add-vs-copy   v1        d88977f1af13   26 minutes ago      20.2MB
+<none>                         <none>    2e56f506e01a   About an hour ago   279MB
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker rmi demo5-dockerfile-add-vs-copy:v1
+Untagged: demo5-dockerfile-add-vs-copy:v1
+Deleted: sha256:d88977f1af130d290f60185634de515423fa1a6c661b8070552c397174609f7a
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/05-Dockerfile-ADD-vs-COPY/Dockerfiles$ docker images
+
+
+
+ENV : ENV is persisted in the final image and will be available in container when it is run from this image
+
+ARG: ARG is not persisted in the final image , So no scope of using that value in the container when it is run from this image.
+
+ENV NAME="Budhiram Sahani"
+ENV SCHOOL=ABC\ Public\ School
+ENV CLASS-fifth
+
+WORKDIR /app
+
+# Copy the templates directory
+COPY templates/ ./templates/             it is directory so        ./templates/ means  /app/templates/ 
+
+COPY requirements.txt requirements.txt
+      ----OR-----
+COPY requirements.txt .
