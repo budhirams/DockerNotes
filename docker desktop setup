@@ -1,0 +1,38 @@
+install docker desktop
+
+cmd > wsl --install
+Downloading: Ubuntu
+Installing: Ubuntu
+Distribution successfully installed. It can be launched via 'wsl.exe -d Ubuntu'
+
+C:\Users\BUDHIRAM SAHANI>wsl.exe -d Ubuntu             create a user
+
+code .           open vs code with ubuntu
+
+Open the terminal (Ctrl + `), and run any Linux or Docker command:
+
+
+
+increase font cttl + -
+
+
+docker ps it will not work 
+You only need to enable WSL Integration
+Open Docker Desktop
+
+Go to:
+
+docker dektop 
+Settings → Resources → WSL Integration
+
+
+when you create a container:
+
+docker: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied.
+See 'docker run --help'.
+
+
+bis@LAPTOP-MAV6U7B1:~$ sudo usermod -aG docker $USER
+[sudo] password for bis:
+
+
