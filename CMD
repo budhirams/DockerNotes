@@ -1,0 +1,82 @@
+CMD
+---------------
+
+Defines the command to run when starting a container from the image.
+
+Only on CMD instruction is allowed per Dockerfile, if there are multiple , only the last one is used 
+
+Used to set default commands for the container
+
+Syntax Options:
+- CMD ["executable","param1,"param2"]
+- CMD ["param1","param2"]
+- CMD command param1 param2
+
+
+
+
+
+How to inspect an image
+------------------------------------
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker  image inspect demo10-dockerfile-cmd:v1
+
+
+ "Cmd": [
+                "nginx",
+                "-g",
+                "daemon off;"
+            ],
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker exec -it my-cmd-demo1 ps aux
+PID   USER     TIME  COMMAND
+    1 root      0:00 nginx: master process nginx -g daemon off;
+   30 nginx     0:00 nginx: worker process
+   31 nginx     0:00 nginx: worker process
+   32 nginx     0:00 nginx: worker process
+   33 nginx     0:00 nginx: worker process
+   34 nginx     0:00 nginx: worker process
+   35 nginx     0:00 nginx: worker process
+   36 nginx     0:00 nginx: worker process
+   37 nginx     0:00 nginx: worker process
+   38 nginx     0:00 nginx: worker process
+   39 nginx     0:00 nginx: worker process
+   40 nginx     0:00 nginx: worker process
+   41 nginx     0:00 nginx: worker process
+   42 root      0:00 ps aux
+
+Observations:
+-----------------------
+The CMD instruction has been overridden with /bin/sh diring docker run
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$  docker run -it --name my-cmd-demo2 demo10-dockerfile-cmd:v1 /bin/sh
+/ # ps aux
+PID   USER     TIME  COMMAND
+    1 root      0:00 /bin/sh
+    7 root      0:00 ps aux
+/ #
+
+If we check in dublicate terminal and inspect 
+------------------------------------------------------
+bis@LAPTOP-MAV6U7B1:~$ docker inspect my-cmd-demo2
+
+  "Cmd": [
+                "/bin/sh"
+            ],
+
+---------------------------
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker ps
+CONTAINER ID   IMAGE                      COMMAND                  CREATED          STATUS          PORTS                  NAMES
+35d6f198bf54   demo10-dockerfile-cmd:v1   "/docker-entrypoint.…"   39 minutes ago   Up 39 minutes   0.0.0.0:8080->80/tcp   my-cmd-demo1
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker rm -f 35d6f198bf54
+35d6f198bf54
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker ps -a
+CONTAINER ID   IMAGE                      COMMAND                  CREATED         STATUS                      PORTS     NAMES
+ef5bd8cde19d   demo10-dockerfile-cmd:v1   "/docker-entrypoint.…"   6 minutes ago   Exited (0) 29 seconds ago             my-cmd-demo2
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker rm -f ef5bd8cde19d
+ef5bd8cde19d
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker images
+REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
+demo10-dockerfile-cmd   v1        9da90f0b3b3f   48 minutes ago   20.1MB
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker rmi $(docker images -q)
+Untagged: demo10-dockerfile-cmd:v1
+Deleted: sha256:9da90f0b3b3fdc5e61beec4b970ad58bf0de4ca49edf7efcedeb07dfef499026
