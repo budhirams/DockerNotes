@@ -1,0 +1,64 @@
+What is ENTRYPOINT instruction in Dockerfile ?
+
+Main Purpose        sets the main command for the container            sets default command or parameters
+overriding          can be changed with docker run -- entrypoint       can be changed by argument in docker run      argument like /bin/sh
+common use          For the main process that rarely changes           for setting defaults or optional parameters
+example             ENTRYPOINT ["program","param"]                     CMD ["program","param"] or CMD param1 param2
+
+
+ENTRYPOINT ["echo", "Kalyan"]  
+echo is program
+kalyan is parameters
+
+
+
+-------------------------------------
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker images
+REPOSITORY              TAG       IMAGE ID       CREATED      SIZE
+dockerfile-entrypoint   v1        71ffe40c83d8   5 days ago   117MB
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker run --name dockerfile-entrypoint-demo1 dockerfile-entrypoint:
+v1
+Kalyan
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker ps -a
+CONTAINER ID   IMAGE                      COMMAND         CREATED          STATUS                      PORTS     NAMES
+9ba8fad9f3cd   dockerfile-entrypoint:v1   "echo Kalyan"   15 seconds ago   Exited (0) 13 seconds ago             dockerfile-entrypoint-demo1
+
+
+Observation:
+----------------
+The container run and outputs kalyan , which is the argument provided in the ENTRYPOINT instruction during the Docker image build.
+
+
+
+NOTE::::: Append Argument to ENTRYPOINT        IN CASE of CMD it replaced
+---------------------------------------
+
+Run Docker container and append an additional argument
+
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker run --name Dockerfile-ENTRYPOINT-demo2 dockerfile-entrypoint:v1 reddy
+Kalyan reddy
+
+Expected Output:
+---------------
+Kalyan reddy         ------- it append 
+
+
+	
+Override ENTRYPOINT instruction
+----------------------------------
+
+- Run Docker container and override the ENTRYPOINT instruction
+bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/11-Dockerfile-ENTRYPOINT/Dockerfiles$ docker run --name my-entrypoint-demo3 --entrypoint /bin/sh dockerfile-entrypoint:v1 -c 'echo "Overriddenn ENTRYPOINT instruction by kalyan reddy daida!"'
+Overriddenn ENTRYPOINT instruction by kalyan reddy daida!
+
+Expected Output:
+Overriddenn ENTRYPOINT instruction by kalyan reddy daida!
+
+Observation:
+--------------------------------------------------------
+- The --entrypoint flag overrides the ENTRYPOINT instruction specified in the Dockerfile
+- The container run /bin/sh with -c option,executing the echo command
+- The container outputs Overriden ENTRYPOINT instruction by Kalyan reddy daida!
