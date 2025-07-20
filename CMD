@@ -80,3 +80,26 @@ demo10-dockerfile-cmd   v1        9da90f0b3b3f   48 minutes ago   20.1MB
 bis@LAPTOP-MAV6U7B1:~/docker-in-a-weekend/10-Dockerfile-CMD/Dockerfiles$ docker rmi $(docker images -q)
 Untagged: demo10-dockerfile-cmd:v1
 Deleted: sha256:9da90f0b3b3fdc5e61beec4b970ad58bf0de4ca49edf7efcedeb07dfef499026
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++   CONCEPT CMD AND ENTRYPOINT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+command pass to ENTRYPOINT will be appendended to the existing command whereas command pass to the CMD is will replace entire command.
+
+
+vim Dockerfile
+FROM ubuntu:latest
+RUN apt-get update && apt-get install -y iputils-ping
+ENTRYPOINT ["ping"]
+CMD ["google.com"]
+
+docker build -t mypingimage .
+docker run mypingimage
+     ping google.com          op
+
+docker run mypingimage 8.8.8.8
+      ping 8.8.8.8
+
+Here, ENTRYPOINT ensures ping always runs, and CMD provides a default argument (google.com). If another argument is passed (8.8.8.8), it replaces CMD.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
