@@ -1,0 +1,99 @@
+VOLUME
+-----------------------
+
+Docker Storage
+-----------------------
+
+volume mounts options
+( --mounts vs -v )
+
+
+mounting volumes with the --mount flag
+syntax:
+--mount
+type=volume,source=volume_name,target=container_path
+
+mounting volume with -v flag
+syntax:
+-v volume_name:container_path
+
+Readable Format:
+
+docker run \
+--name volume-demo \
+-p 8090:80 \
+--mount type=volume,source=myvol101,target=/myapp \
+-d \
+nginx:alpine-slim
+
+
+
+
+ docker run --name volume-demo1 -p 8090:80 --mount type=volume,source=myvol101,target=/myapps -d nginx:alpine-slim
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+7d25ecb25384   nginx:alpine-slim   "/docker-entrypoint.…"   35 seconds ago   Up 35 seconds   0.0.0.0:8090->80/tcp, [::]:8090->80/tcp   volume-demo1
+
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker images
+REPOSITORY   TAG           IMAGE ID       CREATED       SIZE
+nginx        alpine-slim   64daa9307345   3 weeks ago   20.1MB
+
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker volume ls
+DRIVER    VOLUME NAME
+local     359b39069e
+
+
+alpine supported /bin/sh
+
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker exec -it volume-demo1 /bin/sh
+/ #
+
+
+
+
+------------------------------ Docker storage - volumes -----------------------------------------------
+populate data in docker volumes using containers                  "populate data" means to insert, fill, or load data into something
+
+mount volume with read-only option 
+
+
+-------------------------------- 
+--mount flag with read-only access
+
+- prevent containers from modifying the volume's data
+- observation: Attempts to write to the volume within the container will fail;
+syntax:
+--mount
+source=volume_name,target=container_path,readonly
+
+-v flag with read-only access
+-------------------------------------------
+- alternet shirthand for read-only mounts
+- observation: attempts to write to the volume within the container will fail
+
+syntax:
+-v volume_name:container_path:ro
+
+
+
+# Using COPY to copy a local file
+COPY ./static-content/ /usr/share/nginx/html
+is explicitly saying:
+"Copy the static-content folder that is located in the current directory (relative to the Docker build context)."
+
+COPY static-content/ /usr/share/nginx/html           it will also work
+ 
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker run  --name volume-demo1 -p 8091:80 --mount type=volume,source=myvol103,target=/usr/share/nginx/html -d ngins-static:v1
+a04e13c383dea82b17692fc42e528ca05f8f0e0f1a9b7cbe7eef75423be2757b
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker ps
+CONTAINER ID   IMAGE             COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+a04e13c383de   ngins-static:v1   "/docker-entrypoint.…"   9 seconds ago   Up 9 seconds   0.0.0.0:8091->80/tcp, [::]:8091->80/tcp   volume-demo1
+
+a04e13c383de   ngins-static:v1   "/docker-entrypoint.…"   9 seconds ago   Up 9 seconds   0.0.0.0:8091->80/tcp, [::]:8091->80/tcp   volume-demo1
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend/17-Populate-Docker-Volumes-using-containers/Dockerfiles# docker exec -it a04e13c383de /bin/sh
+/ # cd /usr/share/nginx/html/
+/usr/share/nginx/html # ls
+50x.html    app1        file1.html  file2.html  file3.html  file4.html  file5.html  index.html
+
+NOTE: So that mean whatever the content present inside the docker image , when creating a container with a volume , the content 
+      is copied to the volume
