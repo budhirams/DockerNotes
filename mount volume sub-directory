@@ -1,0 +1,36 @@
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker volume ls
+DRIVER    VOLUME NAME
+local     myvol103
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker run --name volume-demo-6 --mount type=volume,source=myvol103,target=/usr/share/nginx/html/app1,volume-subpath=app1 -p 8096:80 -d nginx:alpine-slim
+Unable to find image 'nginx:alpine-slim' locally
+alpine-slim: Pulling from library/nginx
+Digest: sha256:64daa9307345a975d3952f4252827ed4be7f03ea675ad7bb5821f75ad3d43095
+Status: Downloaded newer image for nginx:alpine-slim
+eaa6a142fdc0e50d3f9f45171b3803bb56d192c0a71efe7656e2f715bf360812
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+eaa6a142fdc0   nginx:alpine-slim   "/docker-entrypoint.…"   6 seconds ago   Up 5 seconds   0.0.0.0:8096->80/tcp, [::]:8096->80/tcp   volume-demo-6
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker exec -it volume-demo-6 /bin/sh
+/ # cd /usr/share/nginx/html/
+/usr/share/nginx/html # ls
+50x.html    app1        index.html
+/usr/share/nginx/html # cd app1/
+/usr/share/nginx/html/app1 # ls
+index.html
+/usr/share/nginx/html/app1 # df -kh
+Filesystem                Size      Used Available Use% Mounted on
+overlay                1006.9G      4.1G    951.5G   0% /
+tmpfs                    64.0M         0     64.0M   0% /dev
+tmpfs                     3.7G         0      3.7G   0% /sys/fs/cgroup
+shm                      64.0M         0     64.0M   0% /dev/shm
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/resolv.conf
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hostname
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hosts
+/dev/sdd               1006.9G      4.1G    951.5G   0% /usr/share/nginx/html/app1
+tmpfs                     3.7G         0      3.7G   0% /proc/acpi
+tmpfs                    64.0M         0     64.0M   0% /proc/interrupts
+tmpfs                    64.0M         0     64.0M   0% /proc/kcore
+tmpfs                    64.0M         0     64.0M   0% /proc/keys
+tmpfs                    64.0M         0     64.0M   0% /proc/timer_list
+tmpfs                     3.7G         0      3.7G   0% /sys/firmware
+/usr/share/nginx/html/app1 #
