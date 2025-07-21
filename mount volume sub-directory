@@ -34,3 +34,9 @@ tmpfs                    64.0M         0     64.0M   0% /proc/keys
 tmpfs                    64.0M         0     64.0M   0% /proc/timer_list
 tmpfs                     3.7G         0      3.7G   0% /sys/firmware
 /usr/share/nginx/html/app1 #
+
+
+check in browser
+---------------------------------------
+
+http://localhost:8096/app1/index.html
