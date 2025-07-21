@@ -1,3 +1,10 @@
+Docker Storage 
+====================
+Mount a Docker volume sub-directory
+------------------------------------------------------------------------------------------------
+Useful for sharing specific data without exposing the entire volume content
+
+
 root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker volume ls
 DRIVER    VOLUME NAME
 local     myvol103
@@ -40,3 +47,25 @@ check in browser
 ---------------------------------------
 
 http://localhost:8096/app1/index.html
+
+
+
+
+
+
+# delete Docker container 
+  docker rm -f `docker ps -aq`
+
+# delete docker images
+  docker rmi `docker images -q`
+
+# list docker volumes 
+  docker volume ls
+
+# Observations:
+  volume will persist and are not deleted even after deleting container or images
+
+# delete specific volume
+  docker volume remove myvol103
+
+
