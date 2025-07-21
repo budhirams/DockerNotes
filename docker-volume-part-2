@@ -1,0 +1,85 @@
+docker run --name volume-demo4 --mount source=myvol103,target=/usr/share/nginx/html,readonly -p 8094:80 -d nginx:alpine-slim
+
+Unable to find image 'nginx:alpine-slim' locally
+alpine-slim: Pulling from library/nginx
+Digest: sha256:64daa9307345a975d3952f4252827ed4be7f03ea675ad7bb5821f75ad3d43095
+Status: Downloaded newer image for nginx:alpine-slim
+f2d83d27c2b28eadc6787b1402cb5fc057916dc1e699ad90fe6f13d0fd58cbca
+
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+f2d83d27c2b2   nginx:alpine-slim   "/docker-entrypoint.…"   9 seconds ago   Up 8 seconds   0.0.0.0:8094->80/tcp, [::]:8094->80/tcp   volume-demo4
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker exec -it volume-demo4 /bin/sh
+/ # df -kh
+Filesystem                Size      Used Available Use% Mounted on
+overlay                1006.9G      4.1G    951.5G   0% /
+tmpfs                    64.0M         0     64.0M   0% /dev
+tmpfs                     3.7G         0      3.7G   0% /sys/fs/cgroup
+shm                      64.0M         0     64.0M   0% /dev/shm
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/resolv.conf
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hostname
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hosts
+/dev/sdd               1006.9G      4.1G    951.5G   0% /usr/share/nginx/html
+tmpfs                     3.7G         0      3.7G   0% /proc/acpi
+tmpfs                    64.0M         0     64.0M   0% /proc/interrupts
+tmpfs                    64.0M         0     64.0M   0% /proc/kcore
+tmpfs                    64.0M         0     64.0M   0% /proc/keys
+tmpfs                    64.0M         0     64.0M   0% /proc/timer_list
+tmpfs                     3.7G         0      3.7G   0% /sys/firmware
+
+/ # ls
+bin                   etc                   mnt                   run                   tmp
+dev                   home                  opt                   sbin                  usr
+docker-entrypoint.d   lib                   proc                  srv                   var
+docker-entrypoint.sh  media  
+               root                  sys
+
+/ # cd /usr/share/nginx/html/
+
+/usr/share/nginx/html # ls
+50x.html    app1        file1.html  file2.html  file3.html  file4.html  file5.html  index.html
+
+/usr/share/nginx/html # ls -lrth
+total 32K
+-rw-r--r--    1 root     root         497 Jun 24 17:57 50x.html
+-rw-r--r--    1 root     root         709 Jul 19 18:26 index.html
+-rw-r--r--    1 root     root         301 Jul 19 18:26 file5.html
+-rw-r--r--    1 root     root         301 Jul 19 18:26 file4.html
+-rw-r--r--    1 root     root         301 Jul 19 18:26 file3.html
+-rw-r--r--    1 root     root         301 Jul 19 18:26 file2.html
+-rw-r--r--    1 root     root         301 Jul 19 18:26 file1.html
+drwxr-xr-x    2 root     root        4.0K Jul 20 19:16 app1
+
+/usr/share/nginx/html # cp index.html budhi.html
+cp: can't create 'budhi.html': Read-only file system
+/usr/share/nginx/html #
+
+
+
+
+
+
+
+
+
+-----------------------------    -v flags      ------------------------------------------------------------------
+
+docker run --name volume-demo5 -v myvol103:/usr/share/nginx/html:ro -p 8095:80 -d nginx:alpine-slim
+
+
+
+
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker run --name volume-demo5 -v myvol103:/usr/share/nginx/html:ro -p 8095:80 -d nginx:alpine-slim
+8d90f4938e59d96dd70dc5d8ea714ba113adabc254b2c822b239ac68c1c4498c
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+8d90f4938e59   nginx:alpine-slim   "/docker-entrypoint.…"   3 seconds ago   Up 3 seconds   0.0.0.0:8095->80/tcp, [::]:8095->80/tcp   volume-demo5
+f2d83d27c2b2   nginx:alpine-slim   "/docker-entrypoint.…"   6 minutes ago   Up 6 minutes   0.0.0.0:8094->80/tcp, [::]:8094->80/tcp   volume-demo4
+root@LAPTOP-MAV6U7B1:/home/bis/docker-in-a-weekend# docker exec -it volume-demo5 /bin/sh
+/ # cd /usr/share/nginx/html/
+
+
+/usr/share/nginx/html # ls
+50x.html    app1        file1.html  file2.html  file3.html  file4.html  file5.html  index.html
+/usr/share/nginx/html # cp index.html budhi.html
+cp: can't create 'budhi.html': Read-only file system
