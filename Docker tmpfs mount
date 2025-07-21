@@ -1,0 +1,174 @@
+Docker tmpfs mount
++++++++++++++++++++++++++++++++++++++++++++
+
+
+Docker Storage
+  tmpfs mount
+
+-------------------------------------------
+volume and bind mounts let you share files between the host machine and container so that you can persist data even after the container is stopped
+
+tmpfs mounts are temporary file storage system that reside in the host system's memory.
+
+they are useful for scenarios required fast ephemeral storage that does not persist after the container stops.
+
+A tmpfs mount is temporary and only persist in the host memory
+
+when the container stops the tmpfs mount is removed and files written there won't be persisted.
+
+
+---------------------------------------------------------------------------
+
+
+bis@LAPTOP-MAV6U7B1:~$ free -g
+               total        used        free      shared  buff/cache   available
+Mem:               7           1           5           0           1           6
+Swap:              2           0           2
+
+
+--------------------------------
+
+root@LAPTOP-MAV6U7B1:~# docker run --name tmpfs-demo --mount type=tmpfs,destination=/app -d nginx:alpine-slim
+Unable to find image 'nginx:alpine-slim' locally
+alpine-slim: Pulling from library/nginx
+Digest: sha256:64daa9307345a975d3952f4252827ed4be7f03ea675ad7bb5821f75ad3d43095
+Status: Downloaded newer image for nginx:alpine-slim
+2786adc24f99a0231797b5b05495e87b1b05170e7e5cb7856397b7b5554d7124
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS     NAMES
+2786adc24f99   nginx:alpine-slim   "/docker-entrypoint.…"   4 seconds ago   Up 3 seconds   80/tcp    tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker exec -it tmpfs-demo /bin/sh
+/ # df -kh
+Filesystem                Size      Used Available Use% Mounted on
+overlay                1006.9G      4.1G    951.5G   0% /
+tmpfs                    64.0M         0     64.0M   0% /dev
+tmpfs                     3.7G         0      3.7G   0% /sys/fs/cgroup
+shm                      64.0M         0     64.0M   0% /dev/shm
+tmpfs                     3.7G         0      3.7G   0% /app
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/resolv.conf
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hostname
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hosts
+tmpfs                     3.7G         0      3.7G   0% /proc/acpi
+tmpfs                    64.0M         0     64.0M   0% /proc/interrupts
+tmpfs                    64.0M         0     64.0M   0% /proc/kcore
+tmpfs                    64.0M         0     64.0M   0% /proc/keys
+tmpfs                    64.0M         0     64.0M   0% /proc/timer_list
+tmpfs                     3.7G         0      3.7G   0% /sys/firmware
+/ # cd app/
+/app # ls
+/app # pwd
+/app
+/app # toch abc
+/bin/sh: toch: not found
+/app # touch abc
+/app # ls
+abc
+/app # exit
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS     NAMES
+2786adc24f99   nginx:alpine-slim   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   80/tcp    tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker stop  tmpfs-demo
+tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+root@LAPTOP-MAV6U7B1:~# docker start  tmpfs-demo
+tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS     NAMES
+2786adc24f99   nginx:alpine-slim   "/docker-entrypoint.…"   3 minutes ago   Up 8 seconds   80/tcp    tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker exec -it tmpfs-demo /bin/sh
+/ # cd /app/
+/app # ls
+/app #
+
+
+----------------------------------------------------  IMP PART -----------------------------------------------------------------
+
+
+
+By default , tmpfs mounts have a maximum size of 50% of the host's total RAM . you can customize this using the tmpfs-size option.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+root@LAPTOP-MAV6U7B1:~# docker run --name tmpfs-demo-size --mount type=tmpfs,destination=/app,tmpfs-size=100m -d nginx:alpine-slim
+263a3e037e8f68d7f8a3acdf86e8caac6e617eaeb6892a30e574ddf992831292
+
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS     NAMES
+263a3e037e8f   nginx:alpine-slim   "/docker-entrypoint.…"   13 seconds ago   Up 12 seconds   80/tcp    tmpfs-demo-size
+2786adc24f99   nginx:alpine-slim   "/docker-entrypoint.…"   7 minutes ago    Up 4 minutes    80/tcp    tmpfs-demo
+
+
+
+
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED              STATUS              PORTS     NAMES
+263a3e037e8f   nginx:alpine-slim   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    tmpfs-demo-size
+2786adc24f99   nginx:alpine-slim   "/docker-entrypoint.…"   9 minutes ago        Up 5 minutes        80/tcp    tmpfs-demo
+root@LAPTOP-MAV6U7B1:~# docker exec -it  tmpfs-demo-size /bin/sh
+/ # df -kh
+Filesystem                Size      Used Available Use% Mounted on
+overlay                1006.9G      4.1G    951.5G   0% /
+tmpfs                    64.0M         0     64.0M   0% /dev
+tmpfs                     3.7G         0      3.7G   0% /sys/fs/cgroup
+shm                      64.0M         0     64.0M   0% /dev/shm
+tmpfs                   100.0M         0    100.0M   0% /app
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/resolv.conf
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hostname
+/dev/sdd               1006.9G      4.1G    951.5G   0% /etc/hosts
+tmpfs                     3.7G         0      3.7G   0% /proc/acpi
+tmpfs                    64.0M         0     64.0M   0% /proc/interrupts
+tmpfs                    64.0M         0     64.0M   0% /proc/kcore
+tmpfs                    64.0M         0     64.0M   0% /proc/keys
+tmpfs                    64.0M         0     64.0M   0% /proc/timer_list
+tmpfs                     3.7G         0      3.7G   0% /sys/firmware
+/ # exit
+
+
+
+
+
+
+
+--------------------------------------------- PRACTICAL -----------------------------------------------------------------------------
+
+root@LAPTOP-MAV6U7B1:~# docker run -d --name tmpfs-demo-size --mount  type=tmpfs,destination=/app,tmpfs-size=100m nginx:alpine-slim sleep 1h
+Unable to find image 'nginx:alpine-slim' locally
+alpine-slim: Pulling from library/nginx
+Digest: sha256:64daa9307345a975d3952f4252827ed4be7f03ea675ad7bb5821f75ad3d43095
+Status: Downloaded newer image for nginx:alpine-slim
+9fc6dcb9b1a96bdbfabdd2ff86ef9f43663b6b3464316a31b81adcb54b08ef86
+
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS     NAMES
+9fc6dcb9b1a9   nginx:alpine-slim   "/docker-entrypoint.…"   13 seconds ago   Up 12 seconds   80/tcp    tmpfs-demo-size
+
+root@LAPTOP-MAV6U7B1:~# docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED         STATUS         PORTS     NAMES
+9fc6dcb9b1a9   nginx:alpine-slim   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   80/tcp    tmpfs-demo-size
+
+root@LAPTOP-MAV6U7B1:~# docker exec -it  tmpfs-demo-size /bin/sh
+/ # df -kh /app
+Filesystem                Size      Used Available Use% Mounted on
+tmpfs                   100.0M         0    100.0M   0% /app
+
+/ # dd if=/dev/zero of=/app/testfile bs=1M count=20
+20+0 records in
+20+0 records out
+20971520 bytes (20.0MB) copied, 0.041518 seconds, 481.7MB/s
+
+/ # df -kh /app
+Filesystem                Size      Used Available Use% Mounted on
+tmpfs                   100.0M     20.0M     80.0M  20% /app
+
+/ # ls /app/testfile
+/app/testfile
+
+/ # rm /app/testfile
+
+/ # df -kh /app
+Filesystem                Size      Used Available Use% Mounted on
+tmpfs                   100.0M         0    100.0M   0% /app
+
+/ #
