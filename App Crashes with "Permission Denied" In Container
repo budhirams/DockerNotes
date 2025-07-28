@@ -1,0 +1,34 @@
+App Crashes with "Permission Denied" In Container
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+App worked locally but inside container it fails with "permission denied" . What's likely wrong?
+
+
+
+one of our junior DevOps engineer was working on containerization of an application. And the DevOps engineer containerized the application, but app crashed with permission denied within the container. And interestingly, when the same DevOps engineer executed the application locally, it is working absolutely fine. But only inside the container, even by following the same steps, application failed with permission denied. What can be the issue? Now this is a very common thing when DevOps engineers try to test the application locally. That is, before writing the Dockerfile, obviously DevOps engineers try to understand the build process. And as part of understanding the build process, they use either Ubuntu-like users or they might use their personal users. Let's say I use normal user on my Linux machine. And these users have elevated privileges because DevOps engineers are owners of the virtual machine. So typically, the users will have access to all the files, all the folders. So when you run the applications or when you run the build process and run process as part of this user, it will have access to all the files and folders. But when they try to do the same thing within the container, obviously they can't use their personal user. So within the Dockerfile, they set up users, something like this.
+
+Imagine if I have to write a Dockerfile for a Python application. As a DevOps engineer, I can't use my personal user, so I will be using a user like appuser. Obviously, I can't use the root user as well, so if I don't add this particular step, this container will run as a root user, which is a very, very bad practice. So, I will be using something like user appuser. And just before creation or using this particular user, I have created the user here. Maybe this user does not have permissions to execute the application. Let's say application is in slash app followed by app.py. This is the location of the application. And maybe this particular folder is owned by the root user as well as the root group. Or maybe Ubuntu user and Ubuntu group. So, what you will tell the interviewer? On localhost, while the DevOps engineer is trying to build and run the application, DevOps engineer might be using their personal user or Ubuntu user, which has elevated access, typically access to all the files and folders. But when the same DevOps engineer writes the Dockerfile, they might be creating user, and that user might not have access to the file where application is present.
+
+That's why DevOps Engineer encounters permission denied within the container. And this can be easily fixed by using chown command. Or maybe by granting chmod +x, which is executable permissions, to app.py. Either chmod +x or chown appuser:appuser followed by location where app.py is present. Let's say, /app folder. So this is how you explain the interviewer answer to this question. And this is also a very, very common scenario. Permission denied within the container when you are dealing with users in the Dockerfile. Make sure you grant required permissions to the user that you set up in the Dockerfile. This is how you answer the question.
+
+
+
+
+
+FROM python:3.10
+
+WORKDIR /app
+
+COPY requirement.txt .
+RUN pip install -r requirement.txt
+
+COPY . .
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+RUN chown -R appuser:appuser /app
+
+# switch to not-root user
+USER appuser
+
+# Run the app
+CMD ["python","app.py"]
