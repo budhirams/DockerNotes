@@ -1,0 +1,12 @@
+How will you debug a live container ?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The interviewer is trying to ask you, you need to debug inside a running container. So there is a container that is already running. How can you debug that container? It's very simple. Actually, the question is a little twisted. But the answer to the question is, you will use docker exec. Many people usually focus on docker run command. They focus on docker run -it. But docker run -it is used to run the container interactively. But in this case, interviewer already told you that the container is running. It's a live container. So you cannot perform this. And at the same time, you cannot also perform docker run -d because this will run container in the background which it is already running.
+
+So what you need to do when it comes to a running container, you should use docker exec -it followed by container /bin/bash. So this is the instruction that gets executed. So you will enter the container through the bash mode. Or you can also just say sh if bash does not exist on that machine. So you will enter the command in the shell mode. So this is how you answer how can you debug a live container. But this was a question that was asked in one of the MNC interviews. This is a very, very simple question. But it is a little twisted because people usually talk about docker run command. You need to talk about docker exec when the container is already live. You can also simulate this. Just run a container on your local machine using docker run -it. Or just run it using docker run -d. 
+
+
+docker exec -it <container_id_or_name> /bin/sh
+
+You can also run single commands without entering the shell:
+docker exec <container_id> ps aux
