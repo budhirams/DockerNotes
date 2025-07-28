@@ -1,0 +1,33 @@
+COPY . .
+
+means:
+
+Copy everything from the current directory on your host machine (where the Docker build is running) into the current working directory inside the image (container filesystem).
+
+COPY <source> <destination>
+
+So:
+
+- The first . = source (on your host)
+- The second . = destination (inside the Docker image, relative to WORKDIR)
+
+
+
+Let’s say you have this directory on your host:
+
+/home/bis/app/
+├── Dockerfile
+├── index.js
+└── package.json
+
+
+Your Dockerfile contains:
+
+FROM node:18
+WORKDIR /app
+COPY . .
+
+At build time:
+- index.js and package.json from your host directory are copied into /app inside the container image.
+
+- Result: /app/index.js and /app/package.json exist inside the image.
