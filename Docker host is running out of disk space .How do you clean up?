@@ -1,0 +1,261 @@
+Docker host is running out of disk space .How do you clean up?
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Docker is running out of disk space. How do you clean it up? So basically, the interviewer is trying to ask you, you're running Docker on your personal machine, and you have been running Docker for a good amount of time now. At some point you realize Docker is taking a lot of disk space on your local machine. How do you clean it up? Let's say Docker is consuming 50 GB of your disk space. Quite obviously, there might be images that you're not using. 
+
+There might be containers that you no longer need. It might have created some volumes, network. So how will you clean the disk space that is utilized by Docker? And how can you perform this effectively? So there is no scenario attached to it. This is a pretty straightforward question, and you need to explain to the interviewer what are the commands that you would run. 
+
+First, you will start with running "docker system df" So this will give you information of what is the current utilization. And then you can use the powerful command "docker system prune -a" Or you can just run "docker system prune"   -a is a little more aggressive. What exactly this command does? So this is a system command, or this is administrative Docker command, which will help you clean up dangling images.
+
+What does that mean? You might have created Docker images in the past, and no container at this point is using these Docker images. Or maybe you have created Docker images, but you haven't tagged the Docker images. That itself means these images are less significant. So either images that are not tagged, or any containers that are running are not using these images at all. So Docker system prune will try to remove such images.
+
+
+6 months back, maybe you might have run Payments image, but now it is no longer needed. Such images will be  removed by "docker system prune -a" Then you will run docker volume prune. What docker volume prune does, it will prune or it will remove unused volumes. Actually this is a very, very useful command because volumes take a lot of space on your local machine or wherever you have hosted docker. Because these volumes might be used by databases, they might be writing data continuously to it. By removing volumes, you can free up a lot of the disk space. And finally, you can just verify again by running docker system df. You can verify what is the current utilization. Even when you run these commands actually, docker system prune and docker volume prune, it will actually tell you that okay, this command is going to free up 20 GB of space. For example, if I just take my terminal and quickly show you, I will connect to one of the instance. So this is one of my virtual instance. I hope docker is installed in it. docker system prune -a. So you can see here.
+
+
+
+bis@kali:~/shellScripting$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          7         4         2.087GB   1.691GB (81%)
+Containers      13        0         24.09MB   24.09MB (100%)
+Local Volumes   5         0         9.971GB   9.971GB (100%)
+Build Cache     15        0         4.745kB   4.745kB
+
+
+
+bis@kali:~/shellScripting$ docker system prune -a
+WARNING! This will remove:
+  - all stopped containers
+  - all networks not used by at least one container
+  - all images without at least one container associated to them
+  - all build cache
+
+Are you sure you want to continue? [y/N] y
+Deleted Containers:
+1fea969fa3e9b140645a097302ac56464fa889f6ee36ffcdd9088112cfe62fee
+ebd2f81a318f733d046bc7dfce2cd4b6361f577fc4daed0676b23d15e27aa24d
+de1c7840633a01d8dcd4306275b3d3b2ae0ae05683a57d3dcda2b5a3249033ae
+8a147ad8a27191b76ee72413df1f98ecd1f14d454487a9cead4444f81fe6fc23
+93801ad0f9e218592fe72414e87be0269c66e69bc0a568c2e03a3a05fa9304f0
+64c119ecfa6def099ad3e3b501e10ebc580e25dc499dfd3df078c7cba658097f
+35f6344427d4d00b492867b24c88ff5d1d098a1792a277f3c4e67d78ea1dc722
+2704fe7d4eaefbd4060b88d91e6f6c12a5498d3345c85168f016472b59eca280
+85ac4084de61e59b69458e0939b02fe896a7a71890c912ddeeb5cbb090eebf04
+46f65ffa86066269ca348b1295d33ead5eac3e9602dd054df1b7ac9fe894cd4c
+527a11ba9dd9aad7726de755e5aa81b3b315dcf5a4c9bc74445ee69575851b6c
+dcb48797836d7599ee5dd0453cb503be9dd4b6ecc95b10c33fb92a8abbb1fa35
+3cef703ae56be673249f157599a2a8672e4c7be3f4f021692863b82db9a4a452
+
+Deleted Networks:
+ingress-cluster
+minikube
+ingress-learning
+local-cluster
+my-custom-net
+
+Deleted Images:
+untagged: nginx:latest
+untagged: nginx@sha256:f5c017fb33c6db484545793ffb67db51cdd7daebee472104612f73a85063f889
+deleted: sha256:22bd1541745359072c06a72a23f4f6c52dbb685424e0d5b29008ae4eb2683698
+deleted: sha256:0a7841a283ece9e7e95603090fa7059e7850e1014b9c893d78a876ce1236efc8
+deleted: sha256:bac9c7cf98543a3f0091df2dbca2cdf87a1cb80d6d4c623d6c059b658562937e
+deleted: sha256:32aca3b86eb2d4e257a2a132c0cbb9958aeba1cd85d25ee6a393fd08f6c2288f
+deleted: sha256:4ef9cda1abb71e48d04cc35b0aeec61e7409e2dcb71326373e07623dc8a9f07f
+deleted: sha256:7de008c056b4fc3bdd6011aaaf2c82c0f5e96faa9b5a038e9329662b4444dd5b
+deleted: sha256:c48247a077eb9c2db74e784dce13198fac9ea62484b6073f1a553ab43feeb39b
+deleted: sha256:1bb35e8b4de116e84b2ccf614cce4e309b6043bf2cd35543d8394edeaeb587e3
+untagged: ubuntu:latest
+untagged: ubuntu@sha256:c4570d2f4665d5d118ae29fb494dee4f8db8fcfaee0e37a2e19b827f399070d3
+deleted: sha256:65ae7a6f3544bd2d2b6d19b13bfc64752d776bc92c510f874188bfd404d205a3
+deleted: sha256:107cbdaeec042e6154640c94972c638f4e2fee795902b149e8ce9acbd03d59d7
+untagged: java-quotes:latest
+deleted: sha256:73e42e7ecb9a8ca7a5cd72c2eee69758b138a6a44682d07367ddf679b4db93f7
+untagged: demo-ep:latest
+deleted: sha256:97b526ed7c5d81dc8cdd32ea7962f1e2931ef476897e6e6f68332a8d0c3e4727
+untagged: kicbase/stable:v0.0.45
+untagged: kicbase/stable@sha256:81df288595202a317b1a4dc2506ca2e4ed5f22373c19a441b88cfbf4b9867c85
+untagged: gcr.io/k8s-minikube/kicbase:v0.0.45
+untagged: gcr.io/k8s-minikube/kicbase@sha256:81df288595202a317b1a4dc2506ca2e4ed5f22373c19a441b88cfbf4b9867c85
+deleted: sha256:aeed0e1d4642008f872cbedd0f6935323c1e533683c40e800e0b01d063d11a3c
+deleted: sha256:edf8d38bf136339feeeda62dc8a3a754728b6ecb571036fb6e8a3c51680b776b
+untagged: demo-cmd:latest
+deleted: sha256:e9ab76957d26524d8472865da95ce64471a13b0b0567da872a62830f93677296
+untagged: centos:7
+untagged: centos:centos7
+untagged: centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4
+deleted: sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9
+deleted: sha256:174f5685490326fc0a1c0f5570b8663732189b327007e47ff13d2ca59673db02
+
+Deleted build cache objects:
+rlmfa4fjibouthzgd446cw6sj
+p0z6xsutzh01ozrtyx349k5al
+tca32jmxyyg4g14iyp0unkvjp
+xknbcz9y00vbyn7smjvdja88x
+xusy8fn65nd649mublecmyp9i
+opk74gdqhp7cym5s77ul3v3ol
+xlfhtohglovva5uixcv07t5vx
+mbydvv0nxj4k4h7fdzad6lc1f
+v3n4hwfbkg3kpu4nf5rf1adx7
+yb2aijsryxxvr6bk8k5kexu3v
+pvnk74qym1j0g4vhctrwxmrur
+viof2g7teiprnt00610vvynyo
+rhmpoi8woavrsn7okbrgm0nc0
+qlo168ynof6wniwmvw0d6gyqa
+j8faasf8q8vyvb1tns8a6i6aq
+
+Total reclaimed space: 1.778GB
+
+
+
+bis@kali:~/shellScripting$ docker volume prune 
+WARNING! This will remove anonymous local volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Total reclaimed space: 0B
+
+bis@kali:~/shellScripting$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          0         0         0B        0B
+Containers      0         0         0B        0B
+Local Volumes   5         0         9.971GB   9.971GB (100%)
+Build Cache     0         0         0B        0B
+
+
+
+bis@kali:~/shellScripting$ docker volume ls
+DRIVER    VOLUME NAME
+local     application
+local     ingress-cluster
+local     ingress-learning
+local     local-cluster
+local     minikube
+
+bis@kali:~/shellScripting$ docker system df -v
+Images space usage:
+
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE      SHARED SIZE   UNIQUE SIZE   CONTAINERS
+
+Containers space usage:
+
+CONTAINER ID   IMAGE     COMMAND   LOCAL VOLUMES   SIZE      CREATED   STATUS    NAMES
+
+Local Volumes space usage:
+
+VOLUME NAME        LINKS     SIZE
+application        0         0B
+ingress-cluster    0         1.846GB
+ingress-learning   0         852.8MB
+local-cluster      0         3.692GB
+minikube           0         3.58GB
+
+Build cache usage: 0B
+
+CACHE ID   CACHE TYPE   SIZE      CREATED   LAST USED   USAGE     SHARED
+
+
+
+
+bis@kali:~/shellScripting$ docker system df 
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          0         0         0B        0B
+Containers      0         0         0B        0B
+Local Volumes   5         0         9.971GB   9.971GB (100%)
+Build Cache     0         0         0B        0B
+
+
+
+
+bis@kali:~/shellScripting$ docker volume prune
+WARNING! This will remove anonymous local volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Total reclaimed space: 0B
+
+
+
+bis@kali:~/shellScripting$ docker volume ls
+DRIVER    VOLUME NAME
+local     application
+local     ingress-cluster
+local     ingress-learning
+local     local-cluster
+local     minikube
+
+
+bis@kali:~/shellScripting$ docker volume inspect minikube
+[
+    {
+        "CreatedAt": "2024-11-07T23:21:36+05:30",
+        "Driver": "local",
+        "Labels": {
+            "created_by.minikube.sigs.k8s.io": "true",
+            "name.minikube.sigs.k8s.io": "minikube"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/minikube/_data",
+        "Name": "minikube",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+bis@kali:~/shellScripting$  ls -lh /var/lib/docker/volumes/minikube/_data
+ls: cannot access '/var/lib/docker/volumes/minikube/_data': Permission denied
+
+
+bis@kali:~/shellScripting$ sudo docker volume inspect minikube
+[sudo] password for bis: 
+[
+    {
+        "CreatedAt": "2024-11-07T23:21:36+05:30",
+        "Driver": "local",
+        "Labels": {
+            "created_by.minikube.sigs.k8s.io": "true",
+            "name.minikube.sigs.k8s.io": "minikube"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/minikube/_data",
+        "Name": "minikube",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+bis@kali:~/shellScripting$ sudo du -sh /var/lib/docker/volumes/*/_data
+du: cannot access '/var/lib/docker/volumes/*/_data': No such file or directory
+
+
+Use sudo with find (Reliable & Preferred):
+-----------------------------------------------------------------------------------------------------------------------------
+bis@kali:~/shellScripting$ sudo find /var/lib/docker/volumes/ -name _data -type d -exec du -sh {} \;
+1.8G    /var/lib/docker/volumes/ingress-cluster/_data
+3.5G    /var/lib/docker/volumes/minikube/_data
+4.0K    /var/lib/docker/volumes/minikube/_data/lib/docker/volumes/e86d98012ed5f02f39cc94ded5e164e969c0afb83435e0d119b1e03458128fa0/_data
+8.0K    /var/lib/docker/volumes/application/_data
+821M    /var/lib/docker/volumes/ingress-learning/_data
+3.6G    /var/lib/docker/volumes/local-cluster/_data
+
+
+bis@kali:~/shellScripting$ docker volume rm application
+docker volume rm ingress-learning
+application
+ingress-learning
+
+
+bis@kali:~/shellScripting$ sudo find /var/lib/docker/volumes/ -name _data -type d -exec du -sh {} \;
+1.8G    /var/lib/docker/volumes/ingress-cluster/_data
+3.5G    /var/lib/docker/volumes/minikube/_data
+4.0K    /var/lib/docker/volumes/minikube/_data/lib/docker/volumes/e86d98012ed5f02f39cc94ded5e164e969c0afb83435e0d119b1e03458128fa0/_data
+3.6G    /var/lib/docker/volumes/local-cluster/_data
+
+bis@kali:~/shellScripting$ docker volume rm ingress-cluster
+ingress-cluster
+
+bis@kali:~/shellScripting$ docker volume rm local-cluster
+local-cluster
+
+bis@kali:~/shellScripting$ docker volume rm minikube
+minikube
+
+bis@kali:~/shellScripting$ sudo find /var/lib/docker/volumes/ -name _data -type d -exec du -sh {} \;
+
+bis@kali:~/shellScripting$ docker system df 
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          0         0         0B        0B
+Containers      0         0         0B        0B
+Local Volumes   0         0         0B        0B
+Build Cache     0         0         0B        0B
