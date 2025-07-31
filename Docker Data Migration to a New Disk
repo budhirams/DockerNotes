@@ -1,0 +1,104 @@
+
+# 🐳 Docker Data Migration to a New Disk
+
+This guide explains how to migrate Docker's default data directory (`/var/lib/docker`) to a new disk on a Linux system.
+
+---
+
+## 📦 Prerequisites
+
+- A Linux server with Docker installed
+- A new disk (e.g. `/dev/sdb`)
+- `sudo` privileges
+
+---
+
+## 🔧 Steps
+
+### 1. Partition and Format the New Disk
+
+```bash
+sudo fdisk /dev/sdb
+# n (new partition), p (primary), 1, ENTER, ENTER, w (write)
+sudo mkfs.ext4 /dev/sdb1
+```
+
+### 2. Create Mount Point and Mount It
+
+```bash
+sudo mkdir -p /mnt/docker-new
+sudo mount /dev/sdb1 /mnt/docker-new
+```
+
+Verify:
+```bash
+df -h | grep docker-new
+```
+
+### 3. Stop Docker
+
+```bash
+sudo systemctl stop docker
+```
+
+### 4. Migrate Existing Docker Data
+
+```bash
+sudo rsync -aP /var/lib/docker/ /mnt/docker-new/
+```
+
+### 5. Rename Old Docker Directory
+
+```bash
+sudo mv /var/lib/docker /var/lib/docker.bak
+```
+
+### 6. Bind-Mount New Disk to Docker Path
+
+```bash
+sudo mkdir /var/lib/docker
+sudo mount --bind /mnt/docker-new /var/lib/docker
+```
+
+### 7. Start Docker
+
+```bash
+sudo systemctl start docker
+```
+
+### 8. Make Mount Persistent
+
+Edit `/etc/fstab`:
+
+```bash
+sudo blkid /dev/sdb1
+```
+
+Add to `/etc/fstab`:
+
+```
+UUID=<your-uuid-here> /mnt/docker-new ext4 defaults 0 2
+/mnt/docker-new /var/lib/docker none bind 0 0
+```
+
+### 9. (Optional) Cleanup
+
+After confirming Docker works fine:
+
+```bash
+sudo rm -rf /var/lib/docker.bak
+```
+
+---
+
+## ✅ Notes
+
+- Always back up important Docker volumes before making changes.
+- You can use `lsblk` or `df -h` to check disk usage.
+- This guide uses `rsync` for safer file copying.
+
+---
+
+## 💬 License
+
+MIT
