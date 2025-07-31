@@ -102,3 +102,146 @@ sudo rm -rf /var/lib/docker.bak
 ## 💬 License
 
 MIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+# Docker Data Migration to a New Disk (Production-Ready Guide)
+
+This guide explains how to migrate the Docker data directory (`/var/lib/docker`) to a new disk on a Linux system. It's tailored for real-world production environments where Docker may run critical containers.
+
+---
+
+## 🚨 Prerequisites
+
+- Root or sudo access
+- New disk mounted (e.g., `/mnt/docker-data`)
+- Docker service temporarily stoppable
+- Backup of critical data (recommended)
+
+---
+
+## 🛠️ Steps
+
+### 1. Stop Docker
+
+```
+sudo systemctl stop docker
+```
+
+---
+
+### 2. Create Mount Point
+
+Assume new disk is mounted on `/mnt/docker-data`. Format and mount if not yet done:
+
+```
+sudo mkfs.ext4 /dev/sdX   # Replace sdX with your device
+sudo mkdir -p /mnt/docker-data
+sudo mount /dev/sdX /mnt/docker-data
+```
+
+---
+
+### 3. Copy Existing Docker Data
+
+```
+sudo rsync -aP /var/lib/docker/ /mnt/docker-data/
+```
+
+> ⚠️ Ensure no errors occur and data integrity is preserved.
+
+---
+
+### 4. Update Docker Configuration
+
+Edit or create the Docker daemon config:
+
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json > /dev/null <<EOF
+{
+  "data-root": "/mnt/docker-data"
+}
+EOF
+```
+
+---
+
+### 5. Backup and Rename Old Directory (Optional)
+
+```
+sudo mv /var/lib/docker /var/lib/docker.bak
+```
+
+---
+
+### 6. Restart Docker
+
+```
+sudo systemctl start docker
+```
+
+Verify Docker is working and containers come up as expected:
+
+```
+docker ps -a
+```
+
+---
+
+## ✅ Optional: Persist Mount in /etc/fstab
+
+To ensure the disk mounts on reboot:
+
+```
+sudo blkid /dev/sdX  # Get the UUID
+```
+
+Add the following to `/etc/fstab`:
+
+```
+UUID=xxxxx  /mnt/docker-data  ext4  defaults  0  2
+```
+
+---
+
+## 🔄 Rollback Plan
+
+If something goes wrong:
+
+1. Stop Docker: `sudo systemctl stop docker`
+2. Remove or fix `/etc/docker/daemon.json`
+3. Restore original Docker dir: `sudo mv /var/lib/docker.bak /var/lib/docker`
+4. Start Docker: `sudo systemctl start docker`
+
+---
+
+## 🧾 References
+
+- [Docker Storage Docs](https://docs.docker.com/storage/storagedriver/)
+- [Systemd Docker Unit File](https://docs.docker.com/engine/install/linux-postinstall/)
+
+---
+
+## 📌 Notes
+
+- Always validate container behavior after migration.
+- Consider running migration during maintenance windows.
