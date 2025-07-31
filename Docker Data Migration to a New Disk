@@ -1,247 +1,92 @@
 
-# 🐳 Docker Data Migration to a New Disk
+# 🐳 MySQL Docker Volume with Data Migration
 
-This guide explains how to migrate Docker's default data directory (`/var/lib/docker`) to a new disk on a Linux system.
-
----
-
-## 📦 Prerequisites
-
-- A Linux server with Docker installed
-- A new disk (e.g. `/dev/sdb`)
-- `sudo` privileges
+This project demonstrates how to:
+- Create a MySQL container with persistent storage using Docker volumes
+- Move MySQL data to a new disk (e.g., /dev/sdb1 mounted at /mnt/data-disk)
+- Verify that data remains accessible after migration
 
 ---
 
-## 🔧 Steps
+## 🛠️ Steps Overview
 
-### 1. Partition and Format the New Disk
-
+### 1. Create Docker Volume
 ```bash
-sudo fdisk /dev/sdb
-# n (new partition), p (primary), 1, ENTER, ENTER, w (write)
-sudo mkfs.ext4 /dev/sdb1
+docker volume create mysql_data
 ```
 
-### 2. Create Mount Point and Mount It
-
+### 2. Start MySQL Container
 ```bash
-sudo mkdir -p /mnt/docker-new
-sudo mount /dev/sdb1 /mnt/docker-new
+docker run -d \
+  --name mysql-test \
+  -e MYSQL_ROOT_PASSWORD=secret123 \
+  -v mysql_data:/var/lib/mysql \
+  -p 3306:3306 \
+  mysql:8
 ```
 
-Verify:
+### 3. Insert Sample Data
 ```bash
-df -h | grep docker-new
+docker exec -it mysql-test mysql -uroot -p
+```
+Inside MySQL:
+```sql
+CREATE DATABASE testdb;
+USE testdb;
+CREATE TABLE users (id INT, name VARCHAR(50));
+INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob');
+SELECT * FROM users;
 ```
 
-### 3. Stop Docker
-
+### 4. Format and Mount a New Disk
 ```bash
-sudo systemctl stop docker
+sudo fdisk /dev/sdb        # Create partition
+sudo mkfs.ext4 /dev/sdb1   # Format it
+sudo mkdir -p /mnt/data-disk
+sudo mount /dev/sdb1 /mnt/data-disk
+echo '/dev/sdb1 /mnt/data-disk ext4 defaults 0 0' | sudo tee -a /etc/fstab
 ```
 
-### 4. Migrate Existing Docker Data
-
+### 5. Move Docker Volume to New Disk
 ```bash
-sudo rsync -aP /var/lib/docker/ /mnt/docker-new/
+docker stop mysql-test
+sudo cp -a /var/lib/docker/volumes/mysql_data/_data /mnt/data-disk/mysql_data
+sudo mv /var/lib/docker/volumes/mysql_data/_data /var/lib/docker/volumes/mysql_data/_data.bak
+sudo ln -s /mnt/data-disk/mysql_data /var/lib/docker/volumes/mysql_data/_data
+docker start mysql-test
 ```
 
-### 5. Rename Old Docker Directory
-
+### 6. Verify Data
 ```bash
-sudo mv /var/lib/docker /var/lib/docker.bak
+docker exec -it mysql-test mysql -uroot -p
+SELECT * FROM testdb.users;
 ```
+✅ You should see the data: `Alice` and `Bob`.
 
-### 6. Bind-Mount New Disk to Docker Path
+---
 
+## 📁 Volume Info
+
+Run this to verify the volume mount:
 ```bash
-sudo mkdir /var/lib/docker
-sudo mount --bind /mnt/docker-new /var/lib/docker
+docker volume inspect mysql_data
 ```
 
-### 7. Start Docker
-
-```bash
-sudo systemctl start docker
+Look for:
 ```
-
-### 8. Make Mount Persistent
-
-Edit `/etc/fstab`:
-
-```bash
-sudo blkid /dev/sdb1
-```
-
-Add to `/etc/fstab`:
-
-```
-UUID=<your-uuid-here> /mnt/docker-new ext4 defaults 0 2
-/mnt/docker-new /var/lib/docker none bind 0 0
-```
-
-### 9. (Optional) Cleanup
-
-After confirming Docker works fine:
-
-```bash
-sudo rm -rf /var/lib/docker.bak
+"Mountpoint": "/var/lib/docker/volumes/mysql_data/_data"
 ```
 
 ---
 
-## ✅ Notes
+## 📦 Output
 
-- Always back up important Docker volumes before making changes.
-- You can use `lsblk` or `df -h` to check disk usage.
-- This guide uses `rsync` for safer file copying.
+If you see the users in your SQL query after migration, your setup is successful! 🎉
 
 ---
 
-## 💬 License
-
-MIT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-# Docker Data Migration to a New Disk (Production-Ready Guide)
-
-This guide explains how to migrate the Docker data directory (`/var/lib/docker`) to a new disk on a Linux system. It's tailored for real-world production environments where Docker may run critical containers.
+**Always use `tee -a` when modifying `/etc/fstab` to avoid overwriting system entries.**
 
 ---
 
-## 🚨 Prerequisites
-
-- Root or sudo access
-- New disk mounted (e.g., `/mnt/docker-data`)
-- Docker service temporarily stoppable
-- Backup of critical data (recommended)
-
----
-
-## 🛠️ Steps
-
-### 1. Stop Docker
-
-```
-sudo systemctl stop docker
-```
-
----
-
-### 2. Create Mount Point
-
-Assume new disk is mounted on `/mnt/docker-data`. Format and mount if not yet done:
-
-```
-sudo mkfs.ext4 /dev/sdX   # Replace sdX with your device
-sudo mkdir -p /mnt/docker-data
-sudo mount /dev/sdX /mnt/docker-data
-```
-
----
-
-### 3. Copy Existing Docker Data
-
-```
-sudo rsync -aP /var/lib/docker/ /mnt/docker-data/
-```
-
-> ⚠️ Ensure no errors occur and data integrity is preserved.
-
----
-
-### 4. Update Docker Configuration
-
-Edit or create the Docker daemon config:
-
-```
-sudo mkdir -p /etc/docker
-sudo tee /etc/docker/daemon.json > /dev/null <<EOF
-{
-  "data-root": "/mnt/docker-data"
-}
-EOF
-```
-
----
-
-### 5. Backup and Rename Old Directory (Optional)
-
-```
-sudo mv /var/lib/docker /var/lib/docker.bak
-```
-
----
-
-### 6. Restart Docker
-
-```
-sudo systemctl start docker
-```
-
-Verify Docker is working and containers come up as expected:
-
-```
-docker ps -a
-```
-
----
-
-## ✅ Optional: Persist Mount in /etc/fstab
-
-To ensure the disk mounts on reboot:
-
-```
-sudo blkid /dev/sdX  # Get the UUID
-```
-
-Add the following to `/etc/fstab`:
-
-```
-UUID=xxxxx  /mnt/docker-data  ext4  defaults  0  2
-```
-
----
-
-## 🔄 Rollback Plan
-
-If something goes wrong:
-
-1. Stop Docker: `sudo systemctl stop docker`
-2. Remove or fix `/etc/docker/daemon.json`
-3. Restore original Docker dir: `sudo mv /var/lib/docker.bak /var/lib/docker`
-4. Start Docker: `sudo systemctl start docker`
-
----
-
-## 🧾 References
-
-- [Docker Storage Docs](https://docs.docker.com/storage/storagedriver/)
-- [Systemd Docker Unit File](https://docs.docker.com/engine/install/linux-postinstall/)
-
----
-
-## 📌 Notes
-
-- Always validate container behavior after migration.
-- Consider running migration during maintenance windows.
+Tested on: Kali Linux + Docker + MySQL 8.4
