@@ -1,0 +1,141 @@
+# Running MySQL in Docker with Persistent Volumes
+
+This guide walks through pulling the MySQL Docker image, running it, and recovering data from an existing Docker volume after the container is deleted.
+
+---
+
+## 1. Pull the MySQL Image
+```bash
+docker image pull mysql
+```
+
+Verify:
+```bash
+docker images
+```
+Example output:
+```
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+mysql        latest    fe7f726d39a6   10 days ago   921MB
+ubuntu       latest    65ae7a6f3544   2 weeks ago   78.1MB
+```
+
+---
+
+## 2. Check Where MySQL Stores Data
+Inspect the image to see the `Volumes` path:
+```bash
+docker image inspect mysql:latest | grep -A 2 "Volumes"
+```
+Output:
+```
+"Volumes": {
+    "/var/lib/mysql": {}
+},
+```
+**Note:** MySQL data is stored in `/var/lib/mysql` inside the container.
+
+---
+
+## 3. Run MySQL Container
+```bash
+docker container run -d --name mydb-server     -e MYSQL_ALLOW_EMPTY_PASSWORD=true     mysql:latest
+```
+
+Verify it’s running:
+```bash
+docker ps
+```
+
+---
+
+## 4. Access MySQL Shell
+```bash
+docker exec -it mydb-server /bin/bash
+mysql
+```
+Example:
+```
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+```
+
+---
+
+## 5. Simulate Container Deletion
+```bash
+docker rm -f $(docker ps -aq)
+```
+
+Check existing volumes:
+```bash
+docker volume ls
+```
+
+---
+
+## 6. Identify the Correct Volume
+Since `/var/lib/mysql` holds the database, search for your database folder (e.g., `India`) inside each volume:
+```bash
+for vol in <volume1> <volume2>; do
+    echo "Searching in volume: $vol"
+    sudo find /var/lib/docker/volumes/$vol/_data -maxdepth 1 -type d -name "India"          ------ create databases India , created already in my previos
+done
+```
+Example output:
+```
+Searching in volume: 4b64af2132cd...
+Searching in volume: 518c1bcd6002515b...
+/var/lib/docker/volumes/518c1bcd6002515b.../_data/India
+```
+In this case, the correct volume is:
+```
+518c1bcd6002515b1759bec32a8613d0323da646318e4ca77689d402b1277660
+```
+
+---
+
+## 7. Reuse the Volume
+Run a new container with the old volume:
+```bash
+docker container run -d     -v 518c1bcd6002515b1759bec32a8613d0323da646318e4ca77689d402b1277660:/var/lib/mysql     --name mydb-server     -e MYSQL_ALLOW_EMPTY_PASSWORD=true     mysql
+```
+
+---
+
+## 8. Verify Data Restoration
+```bash
+docker exec -it mydb-server /bin/bash
+mysql
+```
+```
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| India              |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+```
+
+Your old database `India` is back! 🎉
+
+---
+
+## Notes
+- `MYSQL_ALLOW_EMPTY_PASSWORD=true` is for testing only; never use it in production.
+- Always check `/var/lib/mysql` when restoring MySQL containers.
+- You can name your volumes for easier management:
+```bash
+docker run -v myvolume:/var/lib/mysql ...
+```
